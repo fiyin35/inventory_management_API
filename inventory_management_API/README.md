@@ -20,6 +20,13 @@ This is Django REST Frameork (DRF) API to manage inventory for a store where use
 - `/api/token/`: Obtain JWT token
 - `/api/token/refresh/`: Refresh JWT token
 
+# search and order functionality
+GET /api/items/?min_quantity=10
+GET /api/items/?category_name=electronics
+GET /api/items/?search=laptop
+GET /api/items/?ordering=-quantity
+
+
 ## Features
 
 - Add, update, delete inventory items

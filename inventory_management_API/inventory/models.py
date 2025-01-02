@@ -13,10 +13,10 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-    
+   
 
 class InventoryItem(models.Model):
-    """Model item model representing products in stock"""
+    """item model representing products in stock"""
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, 
@@ -40,3 +40,44 @@ class InventoryItem(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+
+class StockTransaction(models.Model):
+
+    TRANSACTION_TYPE_CHOICES = [
+        ('ADD', 'Stock Added'),
+        ('REMOVE', 'Stock Removed'),
+    ]
+
+    item = models.ForeignKey(
+        InventoryItem, 
+        on_delete=models.CASCADE, 
+        related_name='stock_transactions'
+        )
+    
+    quantity = models.PositiveIntegerField()
+    transaction_type = models.CharField(
+        max_length=6, 
+        choices=TRANSACTION_TYPE_CHOICES
+        )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    performed_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        )
+    notes = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.transaction_type == 'REMOVE':
+            # check if there is enough stock to remove
+            if self.item.quantity < self.quantity:
+                raise ValueError('Not enough stock available')
+            self.item.quantity -= self.quantity 
+        else:
+            self.item.quantity += self.quantity
+
+        self.item.save()
+        super().save(*args, **kwargs)
+        

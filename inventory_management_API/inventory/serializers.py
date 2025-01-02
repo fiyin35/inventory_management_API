@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, InventoryItem
+from .models import Category, InventoryItem, StockTransaction
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 
-class InvetoryItemSerializer(serializers.ModelSerializer):
+class InventoryItemSerializer(serializers.ModelSerializer):
     """serializer for inventory item model"""
 
     category = CategorySerializer(read_only=True)
@@ -39,4 +39,15 @@ class InvetoryItemSerializer(serializers.ModelSerializer):
     
     def get_is_low_stock(self, obj):
         return obj.is_low_stock()
+    
+
+class StockTransactionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = StockTransaction 
+        fields = ['id', 'item', 'quantity', 'transaction_type', 'timestamp', 'notes']
+        read_only_fields = ['timestamp']
+
+
+
 
