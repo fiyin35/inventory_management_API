@@ -27,10 +27,34 @@ GET /api/items/?search=laptop
 GET /api/items/?ordering=-quantity
 
 
-## Features
+## Key Features
 
 - Add, update, delete inventory items
 - Categorize inventory items
 - Track stock levels
 - Low stock alerts
+
+Safe Stock Management
+
+Prevents negative stock levels
+Validates input quantities
+Tracks all stock changes
+
+
+Audit Trail
+
+Records who made changes
+Timestamps all transactions
+Stores notes for context
+
+
+Comprehensive Filtering
+
+Multiple filter options
+Flexible search capabilities
+Custom ordering
+
+
+
+Would you like me to explain any part in more detail or add additional features?
   """

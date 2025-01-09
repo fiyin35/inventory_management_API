@@ -1,6 +1,7 @@
-from django.shortcuts import render
 from .models import InventoryItem, Category, StockTransaction
 from .serializers import InventoryItemSerializer, CategorySerializer, StockTransactionSerializer
+from .pagination import StandardResultsPagination
+
 from .filters import InventoryItemFilter
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -22,12 +23,19 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
 
     queryset = InventoryItem.objects.all()
     serializer_class = InventoryItemSerializer
+    pagination_class = StandardResultsPagination
     permission_classes = [permissions.IsAuthenticated]
 
     filterset_class = InventoryItemFilter
     search_fields = ['name', 'description', 'category__name']
     ordering_fields = ['name', 'price', 'quantity', 'created_at']
     ordering = ['name']
+
+    def get_queryset(self):
+        queryset = InventoryItem.objects.all()
+        if self.action == 'list':
+            return queryset.select_related('category', 'created_by')
+        return queryset
 
     def perform_create(self, serializer):
         """Automatically set the created_by to current logged in user"""
@@ -69,7 +77,7 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
         return self._handle_stock_change(request, 'ADD')
     
     @action(detail=True, methods=['PATCH'])
-    def remove_stock(self, request, pk=None):
+    def reduce_stock(self, request, pk=None):
         """Remove stock from inventory item"""
 
         return self._handle_stock_change(request, 'REMOVE')
@@ -90,37 +98,37 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
         }
         return Response(data)
     
-def _handle_stock_change(self, request, transaction_type):
-    """Helper method to handle stock changes"""
-    item = self.get_object()
-    quantity = request.data.get('quantity')
-    notes = request.data.get('notes', '')
+    def _handle_stock_change(self, request, transaction_type):
+        """Helper method to handle stock changes"""
+        item = self.get_object()
+        quantity = request.data.get('quantity')
+        notes = request.data.get('notes', '')
 
-    if not quantity or not isinstance(quantity, (int, float, Decimal)):
-        return Response(
-            {'error': 'Valid quantity required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        transaction = StockTransaction.objects.create(
-            item=item,
-            quantity=quantity,
-            transaction_type=transaction_type,
-            performed_by=request.user,
-            notes=notes 
-        )
+        if not quantity or not isinstance(quantity, (int, float, Decimal)):
+            return Response(
+                {'error': 'Valid quantity required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            transaction = StockTransaction.objects.create(
+                item=item,
+                quantity=quantity,
+                transaction_type=transaction_type,
+                performed_by=request.user,
+                notes=notes 
+            )
 
-        return Response({
-            'message': f'Stock successfully {"added" if transaction_type == "ADD" else "reduced"}',
-            'current_stock': item.quantity,
-            'transaction': StockTransactionSerializer(transaction).data
-        })
-    
-    except ValidationError as e:
-        return Response(
-            {'error': str(e)},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+            return Response({
+                'message': f'Stock successfully {"added" if transaction_type == "ADD" else "reduced"}',
+                'current_stock': item.quantity,
+                'transaction': StockTransactionSerializer(transaction).data
+            })
+        
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     
