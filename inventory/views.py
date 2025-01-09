@@ -1,5 +1,5 @@
-from .models import InventoryItem, Category, StockTransaction
-from .serializers import InventoryItemSerializer, CategorySerializer, StockTransactionSerializer
+from .models import InventoryItem, Category, StockTransaction, Supplier
+from .serializers import InventoryItemSerializer, CategorySerializer, StockTransactionSerializer, SupplierSerializer
 from .pagination import StandardResultsPagination
 
 from .filters import InventoryItemFilter
@@ -17,6 +17,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class SupplierViewSet(viewsets.ModelViewSet):
+    """CRUD operations for product supplier"""
+
+    queryset = Supplier.objects.all()
+    serializer_class = SupplierSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
     """CRUD operations for inventory items"""
@@ -27,7 +34,7 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     filterset_class = InventoryItemFilter
-    search_fields = ['name', 'description', 'category__name']
+    search_fields = ['name', 'description', 'category__name', 'supplier__name']
     ordering_fields = ['name', 'price', 'quantity', 'created_at']
     ordering = ['name']
 
