@@ -32,7 +32,11 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(' ') if not DEBUG else []
+ALLOWED_HOSTS = [
+    'inventory-management-api-lel0.onrender.com',
+    'localhost',  # If running locally
+    '127.0.0.1',  # If running locally
+]
 
 # Cookie Security Settings
 CSRF_COOKIE_SECURE = True
